@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Dashboard')}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <main class="container">
+        <h1>Dashboard</h1>
+        <div class="stats-grid">
+            <div class="card">
+                <h3 class="text-muted">Total Products</h3>
+                <p class="stat-value" th:text="${totalProducts}">0</p>
+            </div>
+            <div class="card">
+                <h3 class="text-muted">Low Stock Items</h3>
+                <p class="stat-value text-danger" th:text="${lowStockProducts.size()}">0</p>
+            </div>
+            <div class="card">
+                <h3 class="text-muted">Active Alters</h3>
+                <p class="stat-value text-danger" th:text="${activeAlerts.size()}">0</p>
+            </div>
+            <div class="card">
+                <h3 class="text-muted">Total Sales</h3>
+                <p class="stat-value" th:text="${sales.size()}">0</p>
+            </div>
+        </div>
+        <div class="card" style="margin:2re,;">
+            <h3>Sales Trend</h3>
+            <canvas id="salesChart" height="100"></canvas>
+        </div>
+    </main>
+    <script>
+        const cts = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Revenue',
+                    data: [12000, 19000, 15000, 25000, 22000, 30000],
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99,102,241,0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#f8fafc' } } },
+                scales: {
+                    x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                    y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

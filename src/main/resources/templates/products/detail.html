@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Product Details')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+        <h1 th:text="${product.name}">Product Name</h1>
+        <div style="display:flex; gap: 1rem;">
+            <!-- AI Forecast Trigger -->
+            <form th:action="@{/forecast/generate/{id}(id=${product.productId})}" method="post">
+                <button type="submit" class="btn btn-primary">Generate AI Forecast</button>
+            </form>
+            <a th:href="@{/products}" class="btn" style="background: var(--border); color: white;">Back</a>
+        </div>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="stats-grid" style="margin: 0 0 2rem 0; grid-template-columns: repeat(3, 1fr);">
+        <div class="card">
+            <h3 class="text-muted">Category</h3>
+            <p class="stat-value" th:text="${product.category}">Category</p>
+        </div>
+        <div class="card">
+            <h3 class="text-muted">Current Stock</h3>
+            <p class="stat-value" th:text="${product.quantity}">0</p>
+            <span th:if="${product.quantity <= product.safetyStock}" class="badge badge-lost" style="margin-top: 0.5rem; display: inline-block;">Low Stock</span>
+        </div>
+        <div class="card">
+            <h3 class="text-muted">Safety Stock Threshold</h3>
+            <p class="stat-value text-warning" th:text="${product.safetyStock}">0</p>
+        </div>
+    </div>
+
+    <!-- Forecast Chart -->
+    <div class="card" th:if="${!#lists.isEmpty(forecasts)}">
+        <h3>Demand Forecast (Next 30 Days)</h3>
+        <p class="text-muted" style="margin-bottom: 1rem;">
+            Model used: <span th:text="${forecasts[0].modelUsed}">Model</span> | 
+            MAPE: <span th:text="${#numbers.formatDecimal(forecasts[0].mapeScore, 1, 2)} + '%'">0%</span>
+        </p>
+        
+        <canvas id="forecastChart" height="100"></canvas>
+    </div>
+
+    <div class="card" th:if="${#lists.isEmpty(forecasts)}" style="text-align: center; padding: 3rem;">
+        <h3 class="text-muted">No Forecast Data Available</h3>
+        <p>Click "Generate AI Forecast" above to run the predictive model.</p>
+    </div>
+</main>
+
+<script th:if="${!#lists.isEmpty(forecasts)}" th:inline="javascript">
+    // Extract dates and predicted demands securely inside javascript from thymeleaf arrays
+    const rawData = [
+        /*[# th:each="f : ${forecasts}"]*/
+            { date: /*[[${f.forecastDate}]]*/ '2020-01-01', demand: /*[[${f.predictedDemand}]]*/ 0 },
+        /*[/]*/
+    ];
+    
+    // Safety check incase thymeleaf didn't interpolate perfectly
+    const processedData = rawData.filter(d => d && d.date);
+
+    const labels = processedData.map(d => d.date);
+    const dataPts = processedData.map(d => d.demand);
+
+    const ctx = document.getElementById('forecastChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Predicted Demand',
+                data: dataPts,
+                borderColor: '#22c55e', // use success green to stand out
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: '#f8fafc' } } },
+            scales: {
+                x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, beginAtZero: true }
+            }
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Alerts')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <main class="container">
+        <h1>⚠️ Active Alerts</h1>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Type</th>
+                    <th>Current Stock</th>
+                    <th>Safety Stock</th>
+                    <th>Triggered At</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="alert : ${alerts}">
+                    <td th:text="${alert.product.name}">Product</td>
+                    <td>
+                        <span th:if="${alert.alertType.name() == 'LOW_STOCK'}" class="badge badge-at-risk">LOW
+                            STOCK</span>
+                        <span th:if="${alert.alertType.name() == 'OUT_OF_STOCK'}" class="badge badge-lost">OUT OF
+                            STOCK</span>
+                    </td>
+                    <td th:text="${alert.product.quantity}">0</td>
+                    <td th:text="${alert.product.safetyStock}">0</td>
+                    <td th:text="${#temporals.format(alert.triggeredAt, 'dd MMM yyyy HH:mm')}">Date</td>
+                    <!-- #temporals = Thymeleaf date formatting utility -->
+                </tr>
+            </tbody>
+        </table>
+    </main>
+</body>
+
+</html>

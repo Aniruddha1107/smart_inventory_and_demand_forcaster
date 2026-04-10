@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="...">
+
+<head th:replace="~{fragments/layout :: head('Products')}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h1>Products</h1>
+            <a th:href="@{/products/add}" class="btn btn-primary" sec:authorize="hasRole('ADMIN')">+ ADD Product</a>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="p : ${products}">
+                    <td th:text="${p.sku}">SKU001</td>
+                    <td th:text="${p.name}">Product Name</td>
+                    <td th:text="${p.category}">Category</td>
+                    <td th:text="'₹' + ${p.price}">₹0</td>
+                    <td th:text="${p.quantity}">0</td>
+                    <td>
+                        <span th:if="${p.quantity <= 0}" class="badge badge-lost">Out of Stock</span>
+                        <span th:if="${p.quantity > 0 && p.quantity <= p.safetyStock}" class="badge badge-at-risk">Low
+                            Stock</span>
+                        <span th:if="${p.quantity > p.safetyStock}" class="badge badge-champions">In Stock</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/products/{id}(id=${p.productId})}" class="btn btn-sm">View</a>
+                        <a th:href="@{/products/edit/{id}(id=${p.productId})}" class="btn btn-sm"
+                            sec:authorize="hasRole('ADMIN')">Edit</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+</body>
+
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Product Form')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <main class="container">
+        <h1 th:text="${product.productId != null} ? 'Edit Product' : 'Add Product'">Form</h1>
+
+        <!-- th:action changes based on add vs edit -->
+        <form th:action="${product.productId != null} ? @{/products/edit/{id}(id=${product.productId})} : @{/products/add}"
+            th:object="${product}" method="post" class="card">
+
+            <div class="form-group">
+                <label>Product Name</label>
+                <input type="text" th:field="*{name}" class="form-control" required>
+                <!-- th:field="*{name}" two-way binds this input to productDTO.name -->
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <input type="text" th:field="*{category}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Price (₹)</label>
+                <input type="number" th:field="*{price}" class="form-control" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" th:field="*{quantity}" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Safety Stock Threshold</label>
+                <input type="number" th:field="*{safetyStock}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>SKU Code</label>
+                <input type="text" th:field="*{sku}" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Product</button>
+        </form>
+    </main>
+</body>
+
+</html>

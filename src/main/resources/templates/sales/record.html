@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Record Sale')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container">
+    <h1>Record a New Sale</h1>
+    
+    <form th:action="@{/sales/record}" th:object="${salesDTO}" method="post" class="card" style="max-width: 600px; margin-top: 1.5rem;">
+        <div class="form-group">
+            <label>Product</label>
+            <select th:field="*{productId}" class="form-control" required>
+                <option value="" disabled selected>Select a product...</option>
+                <option th:each="p : ${products}" 
+                        th:value="${p.productId}" 
+                        th:text="${p.name} + ' (Stock: ' + ${p.quantity} + ')'"></option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Customer</label>
+            <!-- Assuming simple text input for demo due to lack of explicitly wired customer logic in endpoint originally, but let's wire it to customer ID as defined in SalesDTO -->
+            <input type="number" th:field="*{customerId}" class="form-control" placeholder="Enter Customer ID" required>
+        </div>
+
+        <div class="form-group">
+            <label>Quantity Sold</label>
+            <input type="number" th:field="*{quantitySold}" class="form-control" min="1" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Complete Sale</button>
+    </form>
+</main>
+</body>
+</html>

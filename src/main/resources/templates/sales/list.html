@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Sales Tracking')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center">
+        <h1>Sales Tracking</h1>
+        <a th:href="@{/sales/record}" class="btn btn-primary" sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">Record Sale</a>
+    </div>
+
+    <table class="data-table" style="margin-top: 1.5rem;">
+        <thead>
+            <tr>
+                <th>Sale ID</th>
+                <th>Date</th>
+                <th>Product</th>
+                <th>Customer</th>
+                <th>Quantity</th>
+                <th>Total Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="sale : ${sales}">
+                <td th:text="${sale.saleId}">ID</td>
+                <td th:text="${#temporals.format(sale.saleDate, 'dd MMM yyyy')}">Date</td>
+                <td th:text="${sale.product.name}">Product</td>
+                <td th:text="${sale.customer?.name ?: 'Walk-in'}">Customer</td>
+                <td th:text="${sale.quantitySold}">Qty</td>
+                <td th:text="'₹' + ${sale.totalAmount}">Amount</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(sales)}">
+                <td colspan="6" style="text-align: center; padding: 2rem;">No sales records found.</td>
+            </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

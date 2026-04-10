@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Customers')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center">
+        <h1>Customers & RFM Segments</h1>
+        <a th:href="@{/customers/calculate-rfm}" class="btn btn-primary">Recalculate RFM Dimensions</a>
+    </div>
+
+    <table class="data-table" style="margin-top: 1.5rem;">
+        <thead>
+            <tr>
+                <th>Customer ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Recency (Days)</th>
+                <th>Frequency (Txns)</th>
+                <th>Monetary (₹)</th>
+                <th>RFM Segment</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="c : ${customers}">
+                <td th:text="${c.customerId}">ID</td>
+                <td th:text="${c.name}">Name</td>
+                <td th:text="${c.email}">Email</td>
+                <td th:text="${c.recency}">0</td>
+                <td th:text="${c.frequency}">0</td>
+                <td th:text="${c.monetaryValue}">0.0</td>
+                <td>
+                    <!-- Apply specific badge stylings per segment -->
+                    <span th:if="${c.rfmSegment == 'Champions'}" class="badge badge-champions" th:text="${c.rfmSegment}">Segment</span>
+                    <span th:if="${c.rfmSegment == 'Loyal'}" class="badge badge-loyal" th:text="${c.rfmSegment}">Segment</span>
+                    <span th:if="${c.rfmSegment == 'At-Risk'}" class="badge badge-at-risk" th:text="${c.rfmSegment}">Segment</span>
+                    <span th:if="${c.rfmSegment == 'Lost'}" class="badge badge-lost" th:text="${c.rfmSegment}">Segment</span>
+                    <span th:if="${c.rfmSegment == null}" class="badge" style="background: var(--border); color: var(--text-muted);">Unsegmented</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>
