@@ -7,13 +7,13 @@ USE smart_inventory;
 
 -- ─── 1. USERS ────────────────────────────────────────────
 -- Passwords are BCrypt hashed:
---   admin123   → $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
---   manager123 → $2a$10$EqKcp1WFKs2bVsNMO4KOOeTaPCriFZJjA7eQBYna6BQBAbx62q2SK
+--   admin123   → $2a$10$Z3zW8i2haxZPV9KPU91GFerLGYAEueFoLnGb8RxDaqO3pMlFswaeq
+--   manager123 → $2a$10$qD6aAKECaX/KHdk2DMFyIuyMkQX1nh3A6d6nhB1kxWPEKmIg9I/mu
 
 INSERT INTO users (username, password, email, role, is_active, created_at) VALUES
-('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin@smartinv.com', 'ADMIN', true, NOW()),
-('manager1', '$2a$10$EqKcp1WFKs2bVsNMO4KOOeTaPCriFZJjA7eQBYna6BQBAbx62q2SK', 'manager1@smartinv.com', 'MANAGER', true, NOW()),
-('manager2', '$2a$10$EqKcp1WFKs2bVsNMO4KOOeTaPCriFZJjA7eQBYna6BQBAbx62q2SK', 'manager2@smartinv.com', 'MANAGER', true, NOW());
+('admin', '$2a$10$Z3zW8i2haxZPV9KPU91GFerLGYAEueFoLnGb8RxDaqO3pMlFswaeq', 'admin@smartinv.com', 'ADMIN', true, NOW()),
+('manager1', '$2a$10$qD6aAKECaX/KHdk2DMFyIuyMkQX1nh3A6d6nhB1kxWPEKmIg9I/mu', 'manager1@smartinv.com', 'MANAGER', true, NOW()),
+('manager2', '$2a$10$qD6aAKECaX/KHdk2DMFyIuyMkQX1nh3A6d6nhB1kxWPEKmIg9I/mu', 'manager2@smartinv.com', 'MANAGER', true, NOW());
 
 -- ─── 2. PRODUCTS ─────────────────────────────────────────
 INSERT INTO products (name, category, price, quantity, safety_stock, sku, is_active) VALUES

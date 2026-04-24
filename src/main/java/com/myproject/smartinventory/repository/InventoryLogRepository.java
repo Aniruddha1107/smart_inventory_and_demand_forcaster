@@ -7,4 +7,6 @@ import com.myproject.smartinventory.entity.Product;
 
 public interface InventoryLogRepository extends JpaRepository<InventoryLog, Long> {
 	List<InventoryLog> findByProduct(Product product);
+
+	List<InventoryLog> findAllByOrderByTimestampDesc();
 }

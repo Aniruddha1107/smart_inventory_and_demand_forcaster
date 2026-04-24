@@ -1,78 +1,369 @@
-# 📦 Smart Inventory and Demand Forecaster
+# 📦 Smart Inventory
 
-A comprehensive Warehouse Management System (WMS) built using Spring Boot, focusing on inventory tracking, sales processing, customer RFM segmentation, and AI-driven demand forecasting.
-
-## 🌟 Key Features
-
-- **Inventory Tracking**: A dashboard to list, add, edit, and soft-delete products. Tracks both current stock and safety stock levels.
-- **Sales Logging**: Create and track sales mapped between customers and products, which dynamically decrement and adjust inventory levels in real-time.
-- **Alert System**: Automatically flags out-of-stock and low-stock items based on predefined safety thresholds, notifying admins with active alerts.
-- **Customer Insights (RFM)**: Segments customers based on their purchasing habits across Recency, Frequency, and Monetary Value into distinct cohorts (e.g., Champions, Loyal, At-Risk, Lost).
-- **AI Demand Forecasting**: Integrates with an external Python ML service (`/forecast`) over internal HTTP to predict 30-day product demand curves, displayed neatly via interactive Chart.js graphs.
-- **Premium User Interface**: Built entirely with server-side Thymeleaf templates and fragments, backed by clean CSS architecture.
-- **Role-Based Auth**: Secured routes using Spring Security, limiting access based on `ADMIN` and `MANAGER` roles.
-
-## 🛠️ Technology Stack
-
-**Backend System**:
-- Java 17
-- Spring Boot 3.x (Web, Data JPA, Security)
-- MySQL 8.0 (Database Storage)
-- Lombok
-
-**Frontend UI**:
-- HTML5, Vanilla modern CSS (Flexbox/Grid architecture)
-- Thymeleaf Template Engine
-- Chart.js (Data visualization)
-
-**AI Microservice (External Integration)**:
-- Python FastAPI
-- Statsmodels / Prophet (TimeSeries predictions)
-
-## 📂 Project Structure
-
-```
-smartinventory/
-├── src/main/java          # Spring Boot Application Backend
-│   ├── controller         # MVC HTTP Request Mappers (Dashboard, Products, Sales, Forecast)
-│   ├── service            # Core Business Logic (RFM, Alerts, Users)
-│   ├── repository         # JpaRepository Data Access Layer
-│   ├── entity             # Database ORMs
-│   ├── dto                # Data Transfer Objects for Forms
-│   └── security           # Access Control and Auth Configurations 
-├── src/main/resources     # Static Assets and UI
-│   ├── templates/         # Thymeleaf views (auth, sales, customers, products)
-│   ├── static/css/        # Stylings
-│   └── application.properties # App configurations
-└── pom.xml                # Maven Dependencies
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-- JDK 17
-- Maven 3.6+
-- MySQL 8.0 installed locally
-- Python 3.9+ (For the external forecast service)
-
-### Backend Setup
-1. Open MySQL and ensure the database specified in `application.properties` is created.
-2. The project's entities will auto-generate the schema using Hibernate (`spring.jpa.hibernate.ddl-auto=update`).
-3. Run the Spring Boot Application via your IDE or terminal:
-   ```bash
-   mvn spring-boot:run
-   ```
-4. Access the web interface at `http://localhost:8083/`.
-
-### Prediction Service Setup
-*(Ensure you have the API started alongside the backend to view forecasts)*
-1. Navigate to the `forecast-service` directory.
-2. Install pip requirements: `pip install -r requirements.txt`.
-3. Start the FastAPI server using uvicorn. The backend Spring Boot configuration defaults to pinging port `8000` for predictions.
-
-## 🔒 Default Roles
-* **ADMIN**: Has unrestricted access, can register new system users (`/auth/register`), and view all analytics.
-* **MANAGER**: Operations access, can view dashboards, manage product lines, and log sales.
+> An AI-enhanced Inventory Management System built with Spring Boot, Thymeleaf, MySQL, and a Python-based demand forecasting microservice.
 
 ---
-*Built as an extensive tutorial project for data-driven warehouse management.*
+
+## 📋 Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Modules](#modules)
+- [Prerequisites](#prerequisites)
+- [Setup & Installation](#setup--installation)
+- [Starting the Application](#starting-the-application)
+- [User Manual](#user-manual)
+- [Default Credentials](#default-credentials)
+- [Tech Stack](#tech-stack)
+
+---
+
+## Overview
+
+Smart Inventory is a full-stack web application designed for small-to-medium businesses to manage their inventory lifecycle end-to-end. It combines traditional inventory management with AI-driven demand forecasting and customer analytics.
+
+**Key capabilities:**
+- Real-time stock tracking with automatic low-stock and out-of-stock alerts
+- AI demand forecasting using Facebook Prophet (with moving average fallback)
+- EOQ (Economic Order Quantity) reorder intelligence on every product
+- RFM customer segmentation (Recency, Frequency, Monetary)
+- Full purchase order / restock lifecycle
+- Business reports with CSV export
+- Complete inventory audit trail
+- Role-based access control (ADMIN / USER)
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   Browser (User)                    │
+└────────────────────────┬────────────────────────────┘
+                         │ HTTP
+┌────────────────────────▼────────────────────────────┐
+│         Spring Boot Application  (Port 8083)        │
+│         Thymeleaf MVC · Spring Security             │
+└──────────────┬──────────────────────────┬───────────┘
+               │ JPA / Hibernate          │ REST (HTTP)
+┌──────────────▼──────────┐  ┌───────────▼────────────┐
+│   MySQL Database        │  │  FastAPI Forecast       │
+│   smart_inventory       │  │  Service  (Port 8000)   │
+│   Port 3306             │  │  Python · Prophet       │
+└─────────────────────────┘  └────────────────────────┘
+```
+
+The system is a **monolithic Spring Boot MVC application** (server-side rendered with Thymeleaf) with a **separate Python microservice** that handles AI demand forecasting. The two services communicate over HTTP.
+
+---
+
+## Modules
+
+| # | Module | Description |
+|---|---|---|
+| 1 | **User Auth** | Registration, login, role-based access (ADMIN / USER) |
+| 2 | **Product Management** | Full CRUD with soft-delete, category filtering, SKU tracking |
+| 3 | **Sales Management** | Record sales, auto-deduct stock, link to customers |
+| 4 | **Inventory Audit Log** | Immutable log of every stock change (sale, restock, adjustment) |
+| 5 | **Alerts** | Auto-created LOW_STOCK / OUT_OF_STOCK alerts; auto-resolved on restock |
+| 6 | **AI Demand Forecasting** | 30-day Prophet-based forecast per product; falls back to moving average |
+| 7 | **EOQ / Safety Stock** | Wilson's EOQ formula + safety stock calculation shown on every product |
+| 8 | **RFM Customer Segmentation** | Classifies customers as Champions / Loyal / At-Risk / Lost |
+| 9 | **Dashboard** | Summary KPIs + recent activity feed |
+| 10 | **Admin Panel** | User management (add users, assign roles) |
+| 11 | **Restock / Purchase Orders** | Create POs, receive stock (auto-updates inventory + audit log) |
+| 12 | **Reports & Analytics** | Sales report (date-range), Inventory Valuation report, CSV export |
+
+---
+
+## Prerequisites
+
+Make sure the following are installed on your machine:
+
+| Tool | Version | Notes |
+|---|---|---|
+| Java JDK | 21+ | Required for Spring Boot 3.x |
+| Maven | 3.9+ | Bundled via `mvnw` — no separate install needed |
+| MySQL | 8.0+ | Must be running locally on port 3306 |
+| Python | 3.9+ | Required for the forecast microservice |
+| pip | Latest | For installing Python packages |
+
+---
+
+## Setup & Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone <your-repo-url>
+cd "Smart Inventory"
+```
+
+### 2. Create the MySQL Database
+
+Open MySQL Workbench or the MySQL CLI and run:
+
+```sql
+CREATE DATABASE smart_inventory;
+```
+
+> The schema is auto-created by Hibernate (`spring.jpa.hibernate.ddl-auto=update`) on first startup.
+
+### 3. Configure Database Credentials
+
+Edit `smartinventory/src/main/resources/application.properties` if your MySQL credentials differ:
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/smart_inventory
+spring.datasource.username=root
+spring.datasource.password=your_password
+```
+
+### 4. Set Up the Python Forecast Service
+
+```bash
+cd forecast-service
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# macOS / Linux
+source venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+`requirements.txt` includes: `fastapi`, `uvicorn`, `pandas`, `numpy`, `prophet`
+
+> ⚠️ Prophet requires a C++ compiler. On Windows, install [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) first if the install fails.
+
+### 5. (Optional) Load Seed Data
+
+To populate the database with sample products, customers, and sales:
+
+```sql
+-- Run from smartinventory/seed_data.sql
+source path/to/smartinventory/seed_data.sql;
+```
+
+---
+
+## Starting the Application
+
+You need to start **two services**: the Python forecast service and the Spring Boot app.
+
+### Start the Forecast Service (Terminal 1)
+
+```bash
+cd forecast-service
+venv\Scripts\activate       # Windows
+# source venv/bin/activate  # macOS / Linux
+
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Verify it's running: http://localhost:8000
+
+### Start the Spring Boot App (Terminal 2)
+
+```bash
+cd smartinventory
+.\mvnw.cmd spring-boot:run      # Windows
+# ./mvnw spring-boot:run        # macOS / Linux
+```
+
+The app will be available at: **http://localhost:8083**
+
+> 💡 The forecast service **must be started before** generating forecasts, but the main app works independently for all other features.
+
+---
+
+## User Manual
+
+### Logging In
+
+Navigate to **http://localhost:8083/auth/login**
+
+Use your registered credentials. First-time setup — register at `/auth/register` or have an ADMIN create your account.
+
+---
+
+### Dashboard
+
+The landing page after login. Shows:
+- **Total Products** — count of active SKUs
+- **Low Stock Items** — products below their safety stock threshold
+- **Active Alerts** — unresolved stock alerts
+- **Total Sales** — total number of recorded sales
+- **Recent Inventory Activity** — last 5 stock changes (click "View All" for the full audit log)
+- **Sales Trend** — revenue chart
+
+---
+
+### Products
+
+**Path:** `/products`
+
+| Action | Who | How |
+|---|---|---|
+| View all products | Everyone | Navigate to Products in navbar |
+| View product detail + forecast | Everyone | Click **View** on any product row |
+| Add a product | ADMIN | Click **+ Add Product** |
+| Edit a product | ADMIN | Click **Edit** on any product row |
+| Soft-delete a product | ADMIN | Click **Delete** (product is hidden, not erased) |
+
+**Product Detail Page** shows:
+- Current stock vs. safety stock threshold
+- **EOQ Analysis card**: Recommended Order Qty, Suggested Safety Stock, Reorder Point, Annual Demand, Avg Daily Demand (calculated from last 365 days)
+- **AI Demand Forecast**: 30-day chart — click **Generate AI Forecast** to run it (requires Python service running)
+
+---
+
+### Sales
+
+**Path:** `/sales`
+
+- **List view** — all recorded sales transactions
+- **Record a Sale** (`/sales/record`) — select a product, enter quantity sold, optionally link to a customer
+  - Stock is automatically deducted
+  - An inventory log entry is created
+  - Alerts are auto-created if stock drops below the safety stock threshold
+
+---
+
+### Restock / Purchase Orders
+
+**Path:** `/restock`
+
+1. Click **+ New Purchase Order**
+2. Enter the **Supplier Name**
+3. Add one or more items (Product + Quantity + Unit Cost per item)
+4. Click **Add Item** to add more rows dynamically
+5. Submit — the PO is created with status **PENDING**
+
+**Receiving a PO:**
+- Click **✓ Receive** on a PENDING order
+- Stock quantities are automatically increased for each item
+- An inventory audit log entry (`RESTOCK`) is created per item
+- Any active LOW_STOCK / OUT_OF_STOCK alerts for those products are auto-resolved
+
+**Cancelling a PO:** ADMIN only — click **✕ Cancel** on a PENDING order.
+
+---
+
+### Alerts
+
+**Path:** `/alerts`
+
+Displays all **ACTIVE** alerts (LOW_STOCK or OUT_OF_STOCK). Alerts are:
+- **Created automatically** when a sale is recorded and stock falls below the safety stock threshold
+- **Auto-resolved** when a purchase order is received and stock is replenished
+
+---
+
+### Customers & RFM Segmentation
+
+**Path:** `/customers`
+
+Displays all customers with their RFM scores and segment labels.
+
+| Segment | Meaning |
+|---|---|
+| 🟢 Champions | High recency, frequency, and monetary value |
+| 🔵 Loyal | Regularly purchasing, moderate spend |
+| 🟡 At-Risk | Haven't purchased recently despite past activity |
+| 🔴 Lost | Low across all three dimensions |
+
+Click **Recalculate RFM Dimensions** to re-run the segmentation algorithm across all customers using their full purchase history.
+
+---
+
+### Inventory Audit Log
+
+**Path:** `/inventory-log`
+
+Full, immutable history of every stock change. Each entry shows:
+- **Timestamp** of the change
+- **Product** (linked to product detail)
+- **Change Type**: `SALE` (red), `RESTOCK` (green), `ADJUSTMENT` (yellow)
+- **Qty Change**: positive (green) for restocks, negative (red) for sales
+- **Performed By**: the logged-in user who triggered the change
+
+---
+
+### Reports & Analytics *(ADMIN only)*
+
+**Path:** `/reports`
+
+#### Sales Report (`/reports/sales`)
+- Filter by **From / To date range**
+- Shows: Total Revenue, Units Sold, Transactions, Avg Order Value
+- Bar chart of top 10 products by revenue
+- Full product breakdown table sorted by revenue
+- **Export to CSV** button
+
+#### Inventory Valuation (`/reports/inventory`)
+- Lists every active SKU with: Unit Price × Quantity = Total Value
+- Shows total portfolio value in the table footer
+- **Export to CSV** button
+
+---
+
+### Admin — Add User *(ADMIN only)*
+
+**Path:** `/admin/users/add`
+
+Create a new user account. Assign either:
+- `USER` — can view, record sales, create/receive purchase orders
+- `ADMIN` — full access including delete, cancel PO, and reports
+
+---
+
+## Default Credentials
+
+After initial setup, register your first user at `/auth/register` and assign them the `ADMIN` role.
+
+> ⚠️ The `spring.security.user.name=admin / password=admin` in `application.properties` is a fallback in-memory account. Remove it in production.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Language | Java 21 |
+| Framework | Spring Boot 3.5 |
+| ORM | Spring Data JPA / Hibernate |
+| Database | MySQL 8 |
+| Security | Spring Security (Form Login, BCrypt) |
+| View Engine | Thymeleaf + Spring Security extras |
+| Charts | Chart.js (CDN) |
+| Build | Maven (mvnw wrapper included) |
+| Forecasting | Python 3 · FastAPI · Prophet · Pandas · NumPy |
+| Utilities | Lombok |
+
+---
+
+## Project Structure
+
+```
+Smart Inventory/
+├── smartinventory/                 ← Spring Boot application
+│   ├── src/main/java/com/myproject/smartinventory/
+│   │   ├── config/                 ← AppConfig (RestTemplate)
+│   │   ├── controller/             ← MVC Controllers
+│   │   ├── dto/                    ← Data Transfer Objects
+│   │   ├── entity/                 ← JPA Entities
+│   │   ├── repository/             ← Spring Data JPA Repositories
+│   │   ├── security/               ← Spring Security config
+│   │   └── service/                ← Business logic
+│   ├── src/main/resources/
+│   │   ├── static/css/style.css    ← Global stylesheet
+│   │   ├── templates/              ← Thymeleaf HTML templates
+│   │   └── application.properties  ← App configuration
+│   └── pom.xml
+└── forecast-service/               ← Python FastAPI microservice
+    ├── main.py                     ← Forecast endpoint
+    └── requirements.txt
+```

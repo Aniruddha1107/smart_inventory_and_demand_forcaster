@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Sales Report')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <h1>💰 Sales Report</h1>
+            <a th:href="@{/reports}" class="btn" style="background:var(--border); color:white;">← Reports</a>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="card" style="margin-bottom:2rem;">
+            <form th:action="@{/reports/sales}" method="get"
+                style="display:flex; gap:1.5rem; align-items:flex-end; flex-wrap:wrap;">
+                <div class="form-group" style="margin:0; flex:1; min-width:180px;">
+                    <label>From Date</label>
+                    <input type="date" name="from" class="form-control"
+                        th:value="${#temporals.format(summary.from, 'yyyy-MM-dd')}" />
+                </div>
+                <div class="form-group" style="margin:0; flex:1; min-width:180px;">
+                    <label>To Date</label>
+                    <input type="date" name="to" class="form-control"
+                        th:value="${#temporals.format(summary.to, 'yyyy-MM-dd')}" />
+                </div>
+                <button type="submit" class="btn btn-primary" style="align-self:flex-end;">Apply Filter</button>
+                <a th:href="@{/reports/export/sales(from=${summary.from},to=${summary.to})}" class="btn"
+                    style="background:var(--success); color:white; align-self:flex-end;">⬇ Export CSV</a>
+            </form>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="stats-grid" style="margin:0 0 2rem 0;">
+            <div class="card">
+                <h3 class="text-muted">Total Revenue</h3>
+                <p class="stat-value" th:text="'₹' + ${#numbers.formatDecimal(summary.totalRevenue, 1, 2)}">₹0</p>
+            </div>
+            <div class="card">
+                <h3 class="text-muted">Units Sold</h3>
+                <p class="stat-value" th:text="${summary.totalUnits}">0</p>
+            </div>
+            <div class="card">
+                <h3 class="text-muted">Transactions</h3>
+                <p class="stat-value" th:text="${summary.totalTransactions}">0</p>
+            </div>
+            <div class="card">
+                <h3 class="text-muted">Avg Order Value</h3>
+                <p class="stat-value" th:text="'₹' + ${#numbers.formatDecimal(summary.avgOrderValue, 1, 2)}">₹0</p>
+            </div>
+        </div>
+
+        <!-- Bar Chart -->
+        <div class="card" style="margin-bottom:2rem;" th:if="${!#lists.isEmpty(summary.productRows)}">
+            <h3 style="margin-bottom:1rem;">Top Products by Revenue</h3>
+            <canvas id="salesChart" height="80"></canvas>
+        </div>
+
+        <!-- Product Breakdown Table -->
+        <div th:if="${#lists.isEmpty(summary.productRows)}" class="card" style="text-align:center; padding:3rem;">
+            <h3 class="text-muted">No sales in this date range</h3>
+        </div>
+
+        <table class="data-table" th:if="${!#lists.isEmpty(summary.productRows)}">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Product</th>
+                    <th>Units Sold</th>
+                    <th>Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="row, stat : ${summary.productRows}">
+                    <td th:text="${stat.index + 1}" style="color:var(--text-muted);">1</td>
+                    <td th:text="${row.product}">Product</td>
+                    <td th:text="${row.units}">0</td>
+                    <td th:text="'₹' + ${#numbers.formatDecimal(row.revenue, 1, 2)}">₹0</td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+    <script th:if="${!#lists.isEmpty(summary.productRows)}" th:inline="javascript">
+        /*<![CDATA[*/
+        const rows = /*[[${summary.productRows}]]*/[];
+        const top10 = rows.slice(0, 10);
+        const labels = top10.map(r => r.product);
+        const data = top10.map(r => parseFloat(r.revenue));
+
+        new Chart(document.getElementById('salesChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: data,
+                    backgroundColor: 'rgba(99,102,241,0.7)',
+                    borderColor: '#6366f1',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#f8fafc' } } },
+                scales: {
+                    x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                    y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, beginAtZero: true }
+                }
+            }
+        });
+        /*]]>*/
+    </script>
+</body>
+
+</html>

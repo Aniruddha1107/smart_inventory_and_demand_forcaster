@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Create Purchase Order')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <h1>📦 Create Purchase Order</h1>
+            <a th:href="@{/restock}" class="btn" style="background:var(--border); color:white;">← Back</a>
+        </div>
+
+        <div class="card" style="max-width:900px; margin:0 auto;">
+            <form th:action="@{/restock/create}" method="post" id="poForm">
+
+                <div class="form-group">
+                    <label>Supplier Name</label>
+                    <input type="text" name="supplier" class="form-control" placeholder="e.g. ABC Distributors"
+                        required />
+                </div>
+
+                <h3 style="margin: 1.5rem 0 1rem; color: var(--text-muted);">Order Items</h3>
+
+                <table class="data-table" id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity to Order</th>
+                            <th>Unit Cost (₹)</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsBody">
+                        <tr class="item-row">
+                            <td>
+                                <select name="items[0].productId" class="form-control" required>
+                                    <option value="">— Select Product —</option>
+                                    <option th:each="p : ${products}" th:value="${p.productId}"
+                                        th:text="${p.name} + ' (' + ${p.sku} + ')'">Product</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" name="items[0].quantityOrdered" class="form-control" min="1"
+                                    placeholder="Qty" required />
+                            </td>
+                            <td>
+                                <input type="number" name="items[0].unitCost" class="form-control" min="0" step="0.01"
+                                    placeholder="0.00" required />
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-danger" style="padding:0.4rem 0.8rem;"
+                                    onclick="removeRow(this)">✕</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="margin-top:1rem;">
+                    <button type="button" class="btn" style="background:var(--border); color:white;"
+                        onclick="addRow()">+ Add Item</button>
+                </div>
+
+                <div style="margin-top:2rem; display:flex; gap:1rem;">
+                    <button type="submit" class="btn btn-primary">Submit Purchase Order</button>
+                    <a th:href="@{/restock}" class="btn" style="background:var(--border); color:white;">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const products = /*[[${products}]]*/[];
+        let rowIndex = 1;
+
+        function buildOptions() {
+            let opts = '<option value="">— Select Product —</option>';
+            products.forEach(p => {
+                opts += `<option value="${p.productId}">${p.name} (${p.sku})</option>`;
+            });
+            return opts;
+        }
+
+        function addRow() {
+            const tbody = document.getElementById('itemsBody');
+            const row = document.createElement('tr');
+            row.className = 'item-row';
+            row.innerHTML = `
+            <td>
+                <select name="items[${rowIndex}].productId" class="form-control" required>
+                    ${buildOptions()}
+                </select>
+            </td>
+            <td><input type="number" name="items[${rowIndex}].quantityOrdered" class="form-control" min="1" placeholder="Qty" required /></td>
+            <td><input type="number" name="items[${rowIndex}].unitCost" class="form-control" min="0" step="0.01" placeholder="0.00" required /></td>
+            <td><button type="button" class="btn btn-danger" style="padding:0.4rem 0.8rem;" onclick="removeRow(this)">✕</button></td>
+        `;
+            tbody.appendChild(row);
+            rowIndex++;
+        }
+
+        function removeRow(btn) {
+            const rows = document.querySelectorAll('.item-row');
+            if (rows.length <= 1) { alert('A purchase order must have at least one item.'); return; }
+            btn.closest('tr').remove();
+            // Re-index all rows
+            document.querySelectorAll('.item-row').forEach((row, idx) => {
+                row.querySelectorAll('[name]').forEach(el => {
+                    el.name = el.name.replace(/items\[\d+\]/, `items[${idx}]`);
+                });
+            });
+            rowIndex = document.querySelectorAll('.item-row').length;
+        }
+        /*]]>*/
+    </script>
+</body>
+
+</html>

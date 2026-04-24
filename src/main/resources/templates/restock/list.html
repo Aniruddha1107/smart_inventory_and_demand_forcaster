@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('Purchase Orders')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <h1>📦 Restock / Purchase Orders</h1>
+            <a th:href="@{/restock/create}" class="btn btn-primary">+ New Purchase Order</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(purchaseOrders)}" class="card" style="text-align:center; padding:3rem;">
+            <h3 class="text-muted">No purchase orders yet</h3>
+            <p>Create a purchase order to restock your inventory.</p>
+        </div>
+
+        <table class="data-table" th:if="${!#lists.isEmpty(purchaseOrders)}">
+            <thead>
+                <tr>
+                    <th>PO #</th>
+                    <th>Supplier</th>
+                    <th>Items</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Received</th>
+                    <th>Created By</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="po : ${purchaseOrders}">
+                    <td th:text="'PO-' + ${po.poId}" style="font-weight:600;">#</td>
+                    <td th:text="${po.supplier}">Supplier</td>
+                    <td th:text="${po.items.size()} + ' item(s)'" style="color: var(--text-muted);">0</td>
+                    <td>
+                        <span th:if="${po.status.name() == 'PENDING'}" class="badge badge-at-risk">PENDING</span>
+                        <span th:if="${po.status.name() == 'RECEIVED'}" class="badge badge-champions">RECEIVED</span>
+                        <span th:if="${po.status.name() == 'CANCELLED'}" class="badge"
+                            style="background:rgba(163,163,163,0.2); color:var(--text-muted);">CANCELLED</span>
+                    </td>
+                    <td th:text="${#temporals.format(po.createdAt, 'dd MMM yyyy')}">Date</td>
+                    <td th:text="${po.receivedAt != null ? #temporals.format(po.receivedAt, 'dd MMM yyyy') : '—'}">—
+                    </td>
+                    <td th:text="${po.createdBy != null ? po.createdBy.username : '—'}"
+                        style="color:var(--text-muted);">—</td>
+                    <td>
+                        <form th:if="${po.status.name() == 'PENDING'}"
+                            th:action="@{/restock/receive/{id}(id=${po.poId})}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-primary"
+                                style="padding:0.4rem 0.9rem; font-size:0.85rem;">
+                                ✓ Receive
+                            </button>
+                        </form>
+                        <form th:if="${po.status.name() == 'PENDING'}" sec:authorize="hasRole('ADMIN')"
+                            th:action="@{/restock/cancel/{id}(id=${po.poId})}" method="post"
+                            style="display:inline; margin-left:0.5rem;">
+                            <button type="submit" class="btn btn-danger"
+                                style="padding:0.4rem 0.9rem; font-size:0.85rem;"
+                                onclick="return confirm('Cancel this purchase order?')">
+                                ✕ Cancel
+                            </button>
+                        </form>
+                        <span th:if="${po.status.name() != 'PENDING'}"
+                            style="color:var(--text-muted); font-size:0.85rem;">—</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+</body>
+
+</html>

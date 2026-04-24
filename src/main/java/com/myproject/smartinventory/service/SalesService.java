@@ -24,60 +24,60 @@ public class SalesService {
 
 	@Autowired
 	private SalesRepository salesRepository;
-	
+
 	@Autowired
 	private ProductRepository productRepository;
-	
+
 	@Autowired
 	private CustomerRepository customerRepository;
-	
+
 	@Autowired
 	private InventoryLogRepository logRepository;
-	
+
 	@Autowired
 	private AlertService alertService;
-	
+
 	@Transactional
 	public Sales recordSale(SalesDTO dto, User currentUser) {
-		Product product=productRepository.findById(dto.getProductId())
-				.orElseThrow(()-> new RuntimeException("Product not found"));
-		if(product.getQuantity() < dto.getQuantitySold()) {
-			throw new RuntimeException("Insufficient stock! Avilable: "+product.getQuantity());
+		Product product = productRepository.findById(dto.getProductId())
+				.orElseThrow(() -> new RuntimeException("Product not found"));
+		if (product.getQuantity() < dto.getQuantitySold()) {
+			throw new RuntimeException("Insufficient stock! Available: " + product.getQuantity());
 		}
-		
+
 		product.setQuantity(product.getQuantity() - dto.getQuantitySold());
 		productRepository.save(product);
-		
-		Sales sale =new Sales();
+
+		Sales sale = new Sales();
 		sale.setProduct(product);
 		sale.setSaleDate(LocalDate.now());
 		sale.setQuantitySold(dto.getQuantitySold());
 		sale.setTotalAmount(product.getPrice().multiply(BigDecimal.valueOf(dto.getQuantitySold())));
-		
-		if(dto.getCustomerId()!=null) {
-			Customer customer=customerRepository.findById(dto.getCustomerId()).orElse(null);
+
+		if (dto.getCustomerId() != null) {
+			Customer customer = customerRepository.findById(dto.getCustomerId()).orElse(null);
 			sale.setCustomer(customer);
 		}
 		salesRepository.save(sale);
-		
-		InventoryLog log= new InventoryLog();
+
+		InventoryLog log = new InventoryLog();
 		log.setProduct(product);
 		log.setChangeType(ChangeType.SALE);
 		log.setQtyChange(-dto.getQuantitySold());
 		log.setUser(currentUser);
 		logRepository.save(log);
-		
+
 		alertService.checkAndCreateAlert(product);
-		
+
 		return sale;
-		
+
 	}
-	
-	public List<Sales> getSalesByProduct(Product product){
+
+	public List<Sales> getSalesByProduct(Product product) {
 		return salesRepository.findByProduct(product);
 	}
-	
-	public List<Sales> getAllSales(){
+
+	public List<Sales> getAllSales() {
 		return salesRepository.findAll();
 	}
 }

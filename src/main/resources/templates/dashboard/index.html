@@ -4,7 +4,7 @@
 <head th:replace="~{fragments/layout :: head('Dashboard')}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Dashboard</title>
 </head>
 
 <body>
@@ -21,7 +21,7 @@
                 <p class="stat-value text-danger" th:text="${lowStockProducts.size()}">0</p>
             </div>
             <div class="card">
-                <h3 class="text-muted">Active Alters</h3>
+                <h3 class="text-muted">Active Alerts</h3>
                 <p class="stat-value text-danger" th:text="${activeAlerts.size()}">0</p>
             </div>
             <div class="card">
@@ -29,13 +29,55 @@
                 <p class="stat-value" th:text="${sales.size()}">0</p>
             </div>
         </div>
-        <div class="card" style="margin:2re,;">
-            <h3>Sales Trend</h3>
+
+        <div class="card" style="margin:2rem 0;">
+            <h3>Sales Trend (Sample)</h3>
             <canvas id="salesChart" height="100"></canvas>
+        </div>
+
+        <!-- Recent Inventory Activity -->
+        <div class="card" style="margin-bottom:2rem;" th:if="${!#lists.isEmpty(recentLogs)}">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3>Recent Inventory Activity</h3>
+                <a th:href="@{/inventory-log}" style="color:var(--primary); font-size:0.9rem;">View All →</a>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Product</th>
+                        <th>Type</th>
+                        <th>Qty Change</th>
+                        <th>By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="log : ${recentLogs}">
+                        <td th:text="${#temporals.format(log.timestamp, 'dd MMM HH:mm')}"
+                            style="color:var(--text-muted); font-size:0.85rem;"></td>
+                        <td th:text="${log.product.name}"></td>
+                        <td>
+                            <span th:if="${log.changeType.name() == 'SALE'}" class="badge badge-lost">SALE</span>
+                            <span th:if="${log.changeType.name() == 'RESTOCK'}"
+                                class="badge badge-champions">RESTOCK</span>
+                            <span th:if="${log.changeType.name() == 'ADJUSTMENT'}"
+                                class="badge badge-at-risk">ADJUST</span>
+                        </td>
+                        <td>
+                            <span th:if="${log.qtyChange > 0}" th:text="'+' + ${log.qtyChange}"
+                                style="color:var(--success); font-weight:600;"></span>
+                            <span th:if="${log.qtyChange <= 0}" th:text="${log.qtyChange}"
+                                style="color:var(--danger); font-weight:600;"></span>
+                        </td>
+                        <td th:text="${log.user != null ? log.user.username : '—'}" style="color:var(--text-muted);">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </main>
     <script>
-        const cts = document.getElementById('salesChart').getContext('2d');
+        const ctx = document.getElementById('salesChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
             data: {

@@ -38,6 +38,7 @@ public class SalesController {
 	public String recordForm(Model model) {
 		model.addAttribute("salesDTO", new SalesDTO());
 		model.addAttribute("products", productService.getAllActiveProducts());
+		model.addAttribute("customers", customerService.getAllCustomers());
 		return "sales/record";
 	}
 	

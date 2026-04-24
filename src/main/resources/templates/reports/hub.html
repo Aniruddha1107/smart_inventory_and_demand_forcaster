@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Reports & Analytics')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+        <h1>📊 Reports &amp; Analytics</h1>
+        <p class="text-muted" style="margin-bottom:2rem;">Business intelligence across your inventory, sales, and
+            customers.</p>
+
+        <!-- Quick Stats Row (current month) -->
+        <div class="stats-grid" style="margin:0 0 2rem 0;">
+            <div class="card">
+                <h3 class="text-muted">Revenue (This Month)</h3>
+                <p class="stat-value" th:text="'₹' + ${#numbers.formatDecimal(salesSummary.totalRevenue, 1, 2)}">₹0</p>
+            </div>
+            <div class="card">
+                <h3 class="text-muted">Units Sold (This Month)</h3>
+                <p class="stat-value" th:text="${salesSummary.totalUnits}">0</p>
+            </div>
+            <div class="card">
+                <h3 class="text-muted">Transactions (This Month)</h3>
+                <p class="stat-value" th:text="${salesSummary.totalTransactions}">0</p>
+            </div>
+            <div class="card">
+                <h3 class="text-muted">Avg Order Value</h3>
+                <p class="stat-value" th:text="'₹' + ${#numbers.formatDecimal(salesSummary.avgOrderValue, 1, 2)}">₹0</p>
+            </div>
+        </div>
+
+        <!-- Report Cards -->
+        <div class="stats-grid" style="margin:0 0 2rem 0; grid-template-columns: repeat(3,1fr);">
+            <div class="card" style="cursor:pointer;" onclick="location.href='/reports/sales'">
+                <div style="font-size:2.5rem; margin-bottom:1rem;">💰</div>
+                <h2>Sales Report</h2>
+                <p class="text-muted" style="margin-top:0.5rem;">Analyse revenue and units sold by product with custom
+                    date ranges. Export to CSV.</p>
+                <a href="/reports/sales" class="btn btn-primary" style="margin-top:1.5rem; display:inline-block;">View
+                    Report →</a>
+            </div>
+            <div class="card" style="cursor:pointer;" onclick="location.href='/reports/inventory'">
+                <div style="font-size:2.5rem; margin-bottom:1rem;">🏭</div>
+                <h2>Inventory Valuation</h2>
+                <p class="text-muted" style="margin-top:0.5rem;">See the total monetary value of your stock. Identify
+                    high-value and low-value SKUs. Export to CSV.</p>
+                <a href="/reports/inventory" class="btn btn-primary"
+                    style="margin-top:1.5rem; display:inline-block;">View Report →</a>
+            </div>
+            <div class="card">
+                <div style="font-size:2.5rem; margin-bottom:1rem;">👥</div>
+                <h2>Customer Segments</h2>
+                <p class="text-muted" style="margin-top:0.5rem;">RFM segment distribution of your customer base.</p>
+                <div style="margin-top:1.5rem;">
+                    <div th:each="entry : ${segments}"
+                        style="display:flex; justify-content:space-between; margin-bottom:0.5rem; align-items:center;">
+                        <span th:if="${entry.key == 'Champions'}" class="badge badge-champions"
+                            th:text="${entry.key}"></span>
+                        <span th:if="${entry.key == 'Loyal'}" class="badge badge-loyal" th:text="${entry.key}"></span>
+                        <span th:if="${entry.key == 'At-Risk'}" class="badge badge-at-risk"
+                            th:text="${entry.key}"></span>
+                        <span th:if="${entry.key == 'Lost'}" class="badge badge-lost" th:text="${entry.key}"></span>
+                        <span th:if="${entry.key == 'Unsegmented'}" class="badge"
+                            style="background:rgba(163,163,163,0.2);color:var(--text-muted);"
+                            th:text="${entry.key}"></span>
+                        <strong th:text="${entry.value}">0</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

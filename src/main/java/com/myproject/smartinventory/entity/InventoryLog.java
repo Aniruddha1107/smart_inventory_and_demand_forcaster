@@ -27,5 +27,13 @@ public class InventoryLog {
 	@JoinColumn(name="user_id")
 	private User user;
 	
-	private LocalDateTime timestamp =LocalDateTime.now();
+	private LocalDateTime timestamp;
+
+	@PrePersist
+	protected void onCreate() {
+		if (this.timestamp == null) {
+			this.timestamp = LocalDateTime.now();
+		}
+	}
 }
+

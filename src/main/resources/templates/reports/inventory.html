@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Inventory Valuation')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <h1>🏭 Inventory Valuation Report</h1>
+            <div style="display:flex; gap:1rem;">
+                <a th:href="@{/reports/export/inventory}" class="btn" style="background:var(--success); color:white;">⬇
+                    Export CSV</a>
+                <a th:href="@{/reports}" class="btn" style="background:var(--border); color:white;">← Reports</a>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="stats-grid" style="margin:0 0 2rem 0; grid-template-columns: repeat(3,1fr);">
+            <div class="card">
+                <h3 class="text-muted">Total Active SKUs</h3>
+                <p class="stat-value" th:text="${report.totalSKUs}">0</p>
+            </div>
+            <div class="card">
+                <h3 class="text-muted">Total Portfolio Value</h3>
+                <p class="stat-value" th:text="'₹' + ${#numbers.formatDecimal(report.totalValue, 1, 2)}">₹0</p>
+            </div>
+            <div class="card">
+                <h3 class="text-muted">Report Date</h3>
+                <p class="stat-value" style="font-size:1.4rem;"
+                    th:text="${#temporals.format(#temporals.createNow(), 'dd MMM yyyy')}">Today</p>
+            </div>
+        </div>
+
+        <!-- Valuation Table -->
+        <div th:if="${#lists.isEmpty(report.rows)}" class="card" style="text-align:center; padding:3rem;">
+            <h3 class="text-muted">No active products found</h3>
+        </div>
+
+        <table class="data-table" th:if="${!#lists.isEmpty(report.rows)}">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>SKU</th>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Unit Price</th>
+                    <th>Quantity</th>
+                    <th>Total Value</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="row, stat : ${report.rows}">
+                    <td th:text="${stat.index + 1}" style="color:var(--text-muted);">1</td>
+                    <td th:text="${row.sku}" style="font-size:0.85rem; color:var(--text-muted);">SKU</td>
+                    <td th:text="${row.name}" style="font-weight:500;">Name</td>
+                    <td th:text="${row.category}">Category</td>
+                    <td th:text="'₹' + ${#numbers.formatDecimal(row.price, 1, 2)}">₹0</td>
+                    <td th:text="${row.quantity}">0</td>
+                    <td style="font-weight:600;" th:text="'₹' + ${#numbers.formatDecimal(row.value, 1, 2)}">₹0</td>
+                    <td>
+                        <span th:if="${row.status == 'In Stock'}" class="badge badge-champions"
+                            th:text="${row.status}"></span>
+                        <span th:if="${row.status == 'Low Stock'}" class="badge badge-at-risk"
+                            th:text="${row.status}"></span>
+                        <span th:if="${row.status == 'Out of Stock'}" class="badge badge-lost"
+                            th:text="${row.status}"></span>
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr style="border-top: 2px solid var(--primary);">
+                    <td colspan="6" style="font-weight:700; padding:1rem; text-align:right;">TOTAL PORTFOLIO VALUE</td>
+                    <td style="font-weight:700; color:var(--success); font-size:1.1rem;"
+                        th:text="'₹' + ${#numbers.formatDecimal(report.totalValue, 1, 2)}">₹0</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </main>
+</body>
+
+</html>

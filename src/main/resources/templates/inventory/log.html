@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Inventory Audit Log')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <h1>📋 Inventory Audit Log</h1>
+            <span class="badge badge-loyal" th:text="${logs.size()} + ' entries'">0 entries</span>
+        </div>
+
+        <div th:if="${#lists.isEmpty(logs)}" class="card" style="text-align:center; padding:3rem;">
+            <h3 class="text-muted">No log entries yet</h3>
+            <p>Audit entries are created automatically when sales are recorded or stock is restocked.</p>
+        </div>
+
+        <table class="data-table" th:if="${!#lists.isEmpty(logs)}">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Product</th>
+                    <th>SKU</th>
+                    <th>Change Type</th>
+                    <th>Qty Change</th>
+                    <th>Performed By</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="log : ${logs}">
+                    <td th:text="${#temporals.format(log.timestamp, 'dd MMM yyyy HH:mm')}">Date</td>
+                    <td>
+                        <a th:href="@{/products/{id}(id=${log.product.productId})}" th:text="${log.product.name}"
+                            style="color: var(--primary); text-decoration: none;">Product</a>
+                    </td>
+                    <td th:text="${log.product.sku}" style="color: var(--text-muted); font-size:0.85rem;">SKU</td>
+                    <td>
+                        <span th:if="${log.changeType.name() == 'SALE'}" class="badge badge-lost">SALE</span>
+                        <span th:if="${log.changeType.name() == 'RESTOCK'}" class="badge badge-champions">RESTOCK</span>
+                        <span th:if="${log.changeType.name() == 'ADJUSTMENT'}"
+                            class="badge badge-at-risk">ADJUSTMENT</span>
+                    </td>
+                    <td>
+                        <span th:if="${log.qtyChange > 0}" th:text="'+' + ${log.qtyChange}"
+                            style="color: var(--success); font-weight:600;">+0</span>
+                        <span th:if="${log.qtyChange <= 0}" th:text="${log.qtyChange}"
+                            style="color: var(--danger); font-weight:600;">-0</span>
+                    </td>
+                    <td th:text="${log.user != null ? log.user.username : '—'}" style="color: var(--text-muted);">User
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+</body>
+
+</html>
