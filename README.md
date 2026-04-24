@@ -111,12 +111,12 @@ CREATE DATABASE smart_inventory;
 
 ### 3. Configure Database Credentials
 
-Edit `smartinventory/src/main/resources/application.properties` if your MySQL credentials differ:
+Set environment variables if your local MySQL credentials differ:
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/smart_inventory
-spring.datasource.username=root
-spring.datasource.password=your_password
+DB_URL=jdbc:mysql://localhost:3306/smart_inventory
+DB_USERNAME=root
+DB_PASSWORD=your_password
 ```
 
 ### 4. Set Up the Python Forecast Service
@@ -324,7 +324,7 @@ Create a new user account. Assign either:
 
 After initial setup, register your first user at `/auth/register` and assign them the `ADMIN` role.
 
-> ⚠️ The `spring.security.user.name=admin / password=admin` in `application.properties` is a fallback in-memory account. Remove it in production.
+> No default application credentials are committed. Configure local database secrets through environment variables such as `DB_USERNAME` and `DB_PASSWORD`.
 
 ---
 

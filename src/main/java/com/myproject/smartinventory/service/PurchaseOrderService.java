@@ -1,7 +1,9 @@
 package com.myproject.smartinventory.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,8 +39,10 @@ public class PurchaseOrderService {
 
     @Transactional
     public PurchaseOrder createPO(PurchaseOrderDTO dto, User createdBy) {
+        validatePurchaseOrder(dto);
+
         PurchaseOrder po = new PurchaseOrder();
-        po.setSupplier(dto.getSupplier());
+        po.setSupplier(dto.getSupplier().trim());
         po.setStatus(PoStatus.PENDING);
         po.setCreatedBy(createdBy);
 
@@ -53,6 +57,42 @@ public class PurchaseOrderService {
             po.getItems().add(item);
         }
         return poRepository.save(po);
+    }
+
+    private void validatePurchaseOrder(PurchaseOrderDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Purchase order data is required.");
+        }
+        if (dto.getSupplier() == null || dto.getSupplier().isBlank()) {
+            throw new IllegalArgumentException("Supplier name is required.");
+        }
+        if (dto.getItems() == null || dto.getItems().isEmpty()) {
+            throw new IllegalArgumentException("At least one purchase order item is required.");
+        }
+
+        dto.getItems().forEach(item -> {
+            if (item == null) {
+                throw new IllegalArgumentException("Purchase order item cannot be empty.");
+            }
+            if (item.getProductId() == null) {
+                throw new IllegalArgumentException("Each item must reference a product.");
+            }
+            if (item.getQuantityOrdered() == null || item.getQuantityOrdered() <= 0) {
+                throw new IllegalArgumentException("Each item quantity must be greater than 0.");
+            }
+            if (item.getUnitCost() == null || item.getUnitCost().compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("Each item unit cost must be zero or greater.");
+            }
+        });
+
+        long distinctProducts = dto.getItems().stream()
+                .map(PurchaseOrderDTO.PurchaseOrderItemDTO::getProductId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .count();
+        if (distinctProducts != dto.getItems().size()) {
+            throw new IllegalArgumentException("Duplicate products are not allowed in the same purchase order.");
+        }
     }
 
     @Transactional

@@ -78,10 +78,10 @@ public class ReportController {
         PrintWriter writer = response.getWriter();
         writer.println("Product,Units Sold,Revenue (INR)");
         for (Map<String, Object> row : rows) {
-            writer.printf("\"%s\",%s,%s%n", row.get("product"), row.get("units"), row.get("revenue"));
+            writer.printf("%s,%s,%s%n", csvCell(row.get("product")), csvCell(row.get("units")), csvCell(row.get("revenue")));
         }
         writer.println();
-        writer.printf("TOTAL,,%s%n", summary.get("totalRevenue"));
+        writer.printf("%s,%s,%s%n", csvCell("TOTAL"), csvCell(""), csvCell(summary.get("totalRevenue")));
         writer.flush();
     }
 
@@ -97,12 +97,23 @@ public class ReportController {
         PrintWriter writer = response.getWriter();
         writer.println("SKU,Name,Category,Price (INR),Quantity,Value (INR),Status");
         for (Map<String, Object> row : rows) {
-            writer.printf("\"%s\",\"%s\",\"%s\",%s,%s,%s,\"%s\"%n",
-                    row.get("sku"), row.get("name"), row.get("category"),
-                    row.get("price"), row.get("quantity"), row.get("value"), row.get("status"));
+            writer.printf("%s,%s,%s,%s,%s,%s,%s%n",
+                    csvCell(row.get("sku")), csvCell(row.get("name")), csvCell(row.get("category")),
+                    csvCell(row.get("price")), csvCell(row.get("quantity")), csvCell(row.get("value")),
+                    csvCell(row.get("status")));
         }
         writer.println();
-        writer.printf("TOTAL PORTFOLIO VALUE,,,,,,%s%n", report.get("totalValue"));
+        writer.printf("%s,%s,%s,%s,%s,%s,%s%n",
+                csvCell("TOTAL PORTFOLIO VALUE"), csvCell(""), csvCell(""),
+                csvCell(""), csvCell(""), csvCell(""), csvCell(report.get("totalValue")));
         writer.flush();
+    }
+
+    private String csvCell(Object value) {
+        if (value == null) {
+            return "\"\"";
+        }
+        String escaped = value.toString().replace("\"", "\"\"");
+        return "\"" + escaped + "\"";
     }
 }
