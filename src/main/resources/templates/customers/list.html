@@ -5,9 +5,19 @@
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
 
 <main class="container">
+    <!-- Success flash message -->
+    <div th:if="${successMessage}"
+         style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); color:#34d399;
+                border-radius:var(--radius); padding:0.9rem 1.2rem; margin-bottom:1.5rem; font-size:0.95rem;">
+        ✓ <span th:text="${successMessage}">Success</span>
+    </div>
+
     <div style="display:flex; justify-content:space-between; align-items:center">
-        <h1>Customers & RFM Segments</h1>
-        <a th:href="@{/customers/calculate-rfm}" class="btn btn-primary">Recalculate RFM Dimensions</a>
+        <h1>Customers &amp; RFM Segments</h1>
+        <div style="display:flex; gap:0.75rem;">
+            <a th:href="@{/customers/add}" class="btn btn-primary">+ Add Customer</a>
+            <a th:href="@{/customers/calculate-rfm}" class="btn" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text-primary);">Recalculate RFM</a>
+        </div>
     </div>
 
     <table class="data-table" style="margin-top: 1.5rem;">

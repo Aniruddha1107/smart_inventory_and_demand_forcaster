@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Add Customer')}"></head>
+<body>
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<main class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <h1>Add New Customer</h1>
+        <a th:href="@{/customers}" class="btn" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text-primary);">
+            ← Back to Customers
+        </a>
+    </div>
+
+    <!-- Error banner -->
+    <div th:if="${errorMessage}"
+         style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#f87171;
+                border-radius:var(--radius); padding:0.9rem 1.2rem; margin-bottom:1.5rem; font-size:0.95rem;">
+        ⚠ <span th:text="${errorMessage}">Error</span>
+    </div>
+
+    <form th:action="@{/customers/add}" th:object="${customerDTO}" method="post"
+          class="card" style="max-width:540px;">
+
+        <div class="form-group" style="margin-bottom:1.2rem;">
+            <label style="display:block; margin-bottom:0.4rem; font-weight:500; color:var(--text-primary);">
+                Full Name <span style="color:#f87171;">*</span>
+            </label>
+            <input type="text" th:field="*{name}" class="form-control"
+                   placeholder="e.g. Rahul Sharma" required autofocus>
+        </div>
+
+        <div class="form-group" style="margin-bottom:1.5rem;">
+            <label style="display:block; margin-bottom:0.4rem; font-weight:500; color:var(--text-primary);">
+                Email Address <span style="color:#f87171;">*</span>
+            </label>
+            <input type="email" th:field="*{email}" class="form-control"
+                   placeholder="e.g. rahul@example.com" required>
+            <small style="color:var(--text-muted); font-size:0.8rem; margin-top:0.3rem; display:block;">
+                Must be unique — used to link sales records to this customer.
+            </small>
+        </div>
+
+        <div style="display:flex; gap:1rem;">
+            <button type="submit" class="btn btn-primary">
+                ✓ Add Customer
+            </button>
+            <a th:href="@{/customers}" class="btn"
+               style="background:none; border:1px solid var(--border); color:var(--text-muted);">
+                Cancel
+            </a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

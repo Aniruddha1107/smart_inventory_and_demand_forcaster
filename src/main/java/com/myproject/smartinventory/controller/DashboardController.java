@@ -4,7 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.myproject.smartinventory.dto.CustomerDTO;
 import com.myproject.smartinventory.service.AlertService;
 import com.myproject.smartinventory.service.CustomerService;
 import com.myproject.smartinventory.service.InventoryLogService;
@@ -65,5 +69,25 @@ public class DashboardController {
 	public String inventoryLog(Model model) {
 		model.addAttribute("logs", inventoryLogService.getAllLogs());
 		return "inventory/log";
+	}
+
+	@GetMapping("/customers/add")
+	public String addCustomerForm(Model model) {
+		model.addAttribute("customerDTO", new CustomerDTO());
+		return "customers/add";
+	}
+
+	@PostMapping("/customers/add")
+	public String addCustomer(@ModelAttribute CustomerDTO customerDTO,
+			Model model, RedirectAttributes redirectAttributes) {
+		try {
+			customerService.addCustomer(customerDTO);
+			redirectAttributes.addFlashAttribute("successMessage", "Customer '" + customerDTO.getName() + "' added successfully.");
+			return "redirect:/customers";
+		} catch (IllegalArgumentException ex) {
+			model.addAttribute("errorMessage", ex.getMessage());
+			model.addAttribute("customerDTO", customerDTO);
+			return "customers/add";
+		}
 	}
 }
