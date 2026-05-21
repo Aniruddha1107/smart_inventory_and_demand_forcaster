@@ -39,7 +39,7 @@ public class DashboardController {
 		model.addAttribute("lowStockProducts", productService.getLowStockProducts());
 		model.addAttribute("activeAlerts", alertService.getActiveAlerts());
 		model.addAttribute("sales", salesService.getAllSales());
-		model.addAttribute("recentLogs", inventoryLogService.getAllLogs().stream().limit(5).toList());
+		model.addAttribute("recentLogs", inventoryLogService.getRecentLogs());
 		return "dashboard/index";
 	}
 

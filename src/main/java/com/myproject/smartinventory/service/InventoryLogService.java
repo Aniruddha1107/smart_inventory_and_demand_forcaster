@@ -19,6 +19,10 @@ public class InventoryLogService {
         return inventoryLogRepository.findAllByOrderByTimestampDesc();
     }
 
+    public List<InventoryLog> getRecentLogs() {
+        return inventoryLogRepository.findTop5ByOrderByTimestampDesc();
+    }
+
     public List<InventoryLog> getLogsByProduct(Product product) {
         return inventoryLogRepository.findByProduct(product);
     }

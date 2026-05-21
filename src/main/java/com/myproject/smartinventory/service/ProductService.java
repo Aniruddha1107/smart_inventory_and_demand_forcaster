@@ -95,8 +95,6 @@ public class ProductService {
 	}
 
 	public List<Product> getLowStockProducts() {
-		return productRepository.findByIsActiveTrue().stream()
-				.filter(p -> p.getQuantity() <= p.getSafetyStock())
-				.toList();
+		return productRepository.findLowStockProducts();
 	}
 }

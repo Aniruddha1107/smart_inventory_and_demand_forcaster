@@ -19,9 +19,13 @@
         </div>
 
         <div class="form-group">
-            <label>Customer</label>
-            <!-- Assuming simple text input for demo due to lack of explicitly wired customer logic in endpoint originally, but let's wire it to customer ID as defined in SalesDTO -->
-            <input type="number" th:field="*{customerId}" class="form-control" placeholder="Enter Customer ID" required>
+            <label>Customer (optional)</label>
+            <select th:field="*{customerId}" class="form-control">
+                <option value="">-- Anonymous / Walk-in --</option>
+                <option th:each="c : ${customers}"
+                        th:value="${c.customerId}"
+                        th:text="${c.name} + ' (' + ${c.email} + ')'"></option>
+            </select>
         </div>
 
         <div class="form-group">

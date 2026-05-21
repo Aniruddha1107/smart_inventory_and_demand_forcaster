@@ -9,4 +9,8 @@ public interface InventoryLogRepository extends JpaRepository<InventoryLog, Long
 	List<InventoryLog> findByProduct(Product product);
 
 	List<InventoryLog> findAllByOrderByTimestampDesc();
+
+	// Dashboard: fetch only top 5 at DB level — avoids loading all rows
+	List<InventoryLog> findTop5ByOrderByTimestampDesc();
 }
+
